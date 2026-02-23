@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const SignupPage = () => {
     username: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,6 +31,10 @@ const SignupPage = () => {
     localStorage.setItem("password", formData.password);
 
     navigate("/login");
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -69,19 +75,28 @@ const SignupPage = () => {
             />
           </div>
 
-          {/* Password Field */}
+          {/* Password Field with Toggle */}
           <div className="flex flex-col">
             <label className="mb-1 font-semibold text-black text-sm sm:text-base">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full border px-3 py-2 rounded text-sm sm:text-base"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                className="w-full border px-3 py-2 rounded text-sm sm:text-base pr-10"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <button

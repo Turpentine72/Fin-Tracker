@@ -1,54 +1,32 @@
 import React from "react";
-import { Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
+const DEFAULT_COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF"];
 
-const ReportsPieChart = () => {
-  const data = {
-    labels: ["Income", "Expenses", "Balance"],
-    datasets: [
-      {
-        label: "Amount (₦)",
-        data: [50000, 20000, 30000],
-        backgroundColor: ["#3B82F6", "#1E40AF", "#60A5FA"],
-        borderColor: "transparent", // no border
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  const options = {
-    plugins: {
-      legend: {
-        display: false, // hide legend
-      },
-      tooltip: {
-        enabled: false, // hide tooltip
-      },
-      datalabels: {
-        color: "white",
-        font: {
-          weight: "bold",
-          size: 14,
-        },
-        anchor: "center",
-        align: "center",
-        formatter: (value, context) => {
-          const label = context.chart.data.labels[context.dataIndex]; // get slice label
-          return `₦${value.toLocaleString()}\n${label}`; // display amount + label
-        },
-      },
-    },
-  };
-
-  return <Pie data={data} options={options} />;
+const ReportsPieChart = ({ data = [], colors = DEFAULT_COLORS }) => {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={90}
+          fill="#8884d8"
+          paddingAngle={2}
+          dataKey="value"
+          label
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
 };
 
 export default ReportsPieChart;
