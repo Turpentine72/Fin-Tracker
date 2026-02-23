@@ -4,14 +4,23 @@ import { login } from "../utils/auth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      alert("Please enter both email and password");
+    if (!username || !password) {
+      alert("Please enter both username and password");
+      return;
+    }
+
+    // Get saved credentials from localStorage
+    const savedUsername = localStorage.getItem("username");
+    const savedPassword = localStorage.getItem("password");
+
+    if (username !== savedUsername || password !== savedPassword) {
+      alert("Invalid username or password");
       return;
     }
 
@@ -29,19 +38,21 @@ const LoginPage = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Username */}
           <div>
             <label className="block mb-1 text-black text-sm sm:text-base">
-              Email
+              Username
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full border px-3 py-2 rounded text-sm sm:text-base"
-              placeholder="you@example.com"
+              placeholder="Enter your username"
             />
           </div>
 
+          {/* Password */}
           <div>
             <label className="block mb-1 text-black text-sm sm:text-base">
               Password

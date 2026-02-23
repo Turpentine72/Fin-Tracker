@@ -39,32 +39,34 @@ const Sidebar = () => {
         <nav className="flex flex-col gap-4">
           <Link
             to="/dashboard"
-            className="px-3 py-2 rounded"
+            className="px-3 py-2 rounded text-xl"
             onClick={() => setIsOpen(false)}
           >
             Dashboard
           </Link>
           <Link
             to="/transactions"
-            className="px-3 py-2 rounded"
+            className="px-3 py-2 rounded text-xl"
             onClick={() => setIsOpen(false)}
           >
             Transactions
           </Link>
           <Link
             to="/reports"
-            className="px-3 py-2 rounded"
+            className="px-3 py-2 rounded text-xl"
             onClick={() => setIsOpen(false)}
           >
             Reports
           </Link>
           <Link
             to="/settings"
-            className="px-3 py-2 rounded"
+            className="px-3 py-2 rounded text-xl"
             onClick={() => setIsOpen(false)}
           >
             Settings
           </Link>
+
+          
         </nav>
       </aside>
     </>

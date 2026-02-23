@@ -16,7 +16,7 @@ const SummaryCard = ({ icon, title, value, color }) => (
 
 const Reports = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen bg-blue-500">
       <main className="flex-1 p-8">
 
         {/* Banner Section */}

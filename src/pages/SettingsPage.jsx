@@ -1,16 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import defaultAvatar from "../assets/mariia-shalabaieva-GSmXdBMjzcQ-unsplash.jpg";
 
 const SettingsPage = () => {
-  const [monthlyBudget, setMonthlyBudget] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [profilePic, setProfilePic] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
+
+  const [monthlyBudget, setMonthlyBudget] = useState(
+    localStorage.getItem("monthlyBudget") || ""
+  );
+  const [username, setUsername] = useState(
+    localStorage.getItem("username") || ""
+  );
+  const [password, setPassword] = useState(
+    localStorage.getItem("password") || ""
+  );
+  const [profilePic, setProfilePic] = useState(
+    localStorage.getItem("profilePic") || null
+  );
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("darkMode") === "true"
+  );
 
   const fileInputRef = useRef();
 
-  // Apply dark mode class to html element when darkMode changes
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -18,25 +30,6 @@ const SettingsPage = () => {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
-
-  // CSV Export function
-  const exportCSV = (data) => {
-    if (!data || !data.length) return;
-
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map((row) => Object.values(row).join(",")).join("\n");
-    const csvContent = `${headers}\n${rows}`;
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -55,18 +48,43 @@ const SettingsPage = () => {
     alert("Settings saved successfully!");
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePic(reader.result);
+        localStorage.setItem("profilePic", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Sample data to export
+  const exportCSV = (data) => {
+    if (!data || !data.length) return;
+
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data.map((row) => Object.values(row).join(",")).join("\n");
+    const csvContent = `${headers}\n${rows}`;
+
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const sampleData = [
     { Date: "2026-02-01", Description: "Food", Amount: 1200 },
     { Date: "2026-02-02", Description: "Transport", Amount: 800 },
@@ -74,17 +92,17 @@ const SettingsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-blue-200 dark:bg-gray-900 p-4 sm:p-8 flex justify-center items-start transition-colors duration-300">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-8 w-full max-w-sm sm:max-w-lg">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-blue-500 dark:bg-gray-900 p-6 flex justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 w-full max-w-lg">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">
           Settings
         </h1>
 
         <form onSubmit={handleSave}>
-          {/* Clickable Profile Picture */}
+          {/* Profile Picture */}
           <div className="mb-6 flex flex-col items-center">
             <div
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-2 bg-gray-300 dark:bg-gray-600 flex items-center justify-center cursor-pointer border overflow-hidden"
+              className="w-24 h-24 rounded-full mb-2 bg-gray-300 dark:bg-gray-600 flex items-center justify-center cursor-pointer border overflow-hidden"
               onClick={() => fileInputRef.current.click()}
             >
               <img
@@ -104,7 +122,7 @@ const SettingsPage = () => {
 
           {/* Username */}
           <div className="mb-4">
-            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200">
               Username
             </label>
             <input
@@ -112,13 +130,13 @@ const SettingsPage = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
             />
           </div>
 
           {/* Password */}
           <div className="mb-4">
-            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200">
               Password
             </label>
             <input
@@ -126,13 +144,13 @@ const SettingsPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
             />
           </div>
 
           {/* Monthly Budget */}
           <div className="mb-6">
-            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+            <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-200">
               Monthly Budget (₦)
             </label>
             <input
@@ -140,49 +158,60 @@ const SettingsPage = () => {
               value={monthlyBudget}
               onChange={(e) => setMonthlyBudget(e.target.value)}
               placeholder="Enter your monthly budget"
-              className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base appearance-none"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
             />
           </div>
 
-          {/* Dark Mode Toggle (only one) */}
-          <div className="mb-6">
+          {/* Dark Mode */}
+          <div
+            className="flex items-center justify-between mb-6 cursor-pointer"
+            onClick={() => {
+              setDarkMode(!darkMode);
+              localStorage.setItem("darkMode", !darkMode);
+            }}
+          >
+            <span className="text-gray-700 dark:text-gray-200">
+              Dark Mode
+            </span>
             <div
-              className="flex items-center justify-between cursor-pointer"
-              onClick={() => setDarkMode(!darkMode)}
+              className={`w-12 h-6 rounded-full ${
+                darkMode ? "bg-blue-600" : "bg-gray-300"
+              } relative`}
             >
-              <span className="text-gray-700 dark:text-gray-200 text-sm sm:text-base">
-                Dark Mode
-              </span>
               <div
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  darkMode ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
-                } relative pointer-events-none`}
-              >
-                <div
-                  className={`w-6 h-6 bg-white rounded-full shadow transform duration-300 absolute top-0.5 ${
-                    darkMode ? "left-6" : "left-0.5"
-                  }`}
-                ></div>
-              </div>
+                className={`w-6 h-6 bg-white rounded-full absolute top-0.5 ${
+                  darkMode ? "left-6" : "left-0.5"
+                }`}
+              ></div>
             </div>
           </div>
 
-          {/* Buttons - no hover effect */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          {/* Buttons Row */}
+          <div className="flex gap-3 mb-3">
             <button
               type="submit"
-              className="w-full sm:flex-1 bg-blue-600 hover:bg-blue-600 text-white p-2 sm:p-3 rounded-lg text-sm sm:text-base transition-none"
+              className="flex-1 bg-blue-600 text-white p-3 rounded-lg"
             >
               Save Settings
             </button>
+
             <button
               type="button"
               onClick={() => exportCSV(sampleData)}
-              className="w-full sm:flex-1 bg-green-600 hover:bg-green-600 text-white p-2 sm:p-3 rounded-lg text-sm sm:text-base transition-none"
+              className="flex-1 bg-green-600 text-white p-3 rounded-lg"
             >
               Export CSV
             </button>
           </div>
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full bg-red-500 text-white p-3 rounded-lg"
+          >
+            Logout
+          </button>
         </form>
       </div>
     </div>
