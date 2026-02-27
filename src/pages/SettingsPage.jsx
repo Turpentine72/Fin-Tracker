@@ -1,379 +1,179 @@
-import React, { useState, useEffect } from "react";
-import { 
-  FaUser, FaWallet, FaPalette, FaSave, FaUndo, 
-  FaEye, FaEyeSlash, FaCamera, FaSignOutAlt 
-} from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaCamera, FaFileCsv } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const SettingsPage = () => {
-  // Load settings from localStorage or defaults
-  const [name, setName] = useState(localStorage.getItem("userName") || "");
-  const [username, setUsername] = useState(localStorage.getItem("username") || "");
-  const [password, setPassword] = useState(localStorage.getItem("password") || "");
-  const [monthlyBudget, setMonthlyBudget] = useState(
-    Number(localStorage.getItem("monthlyBudget")) || 0
-  );
-  const [currency, setCurrency] = useState(localStorage.getItem("currency") || "₦");
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
-  const [dateFormat, setDateFormat] = useState(localStorage.getItem("dateFormat") || "MM/DD/YYYY");
-  const [profilePic, setProfilePic] = useState(localStorage.getItem("profilePic") || "");
+export default function Settings() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
-  // Password visibility toggle
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Active tab
-  const [activeTab, setActiveTab] = useState("profile");
-
-  // Temporary state for unsaved changes
-  const [tempName, setTempName] = useState(name);
-  const [tempUsername, setTempUsername] = useState(username);
-  const [tempPassword, setTempPassword] = useState(password);
-  const [tempBudget, setTempBudget] = useState(monthlyBudget);
-  const [tempCurrency, setTempCurrency] = useState(currency);
-  const [tempTheme, setTempTheme] = useState(theme);
-  const [tempDateFormat, setTempDateFormat] = useState(dateFormat);
-  const [tempProfilePic, setTempProfilePic] = useState(profilePic);
-
-  // Save profile changes (including profile pic)
-  const saveProfile = () => {
-    if (!tempName || !tempUsername || !tempPassword) {
-      alert("All fields are required.");
-      return;
-    }
-    setName(tempName);
-    setUsername(tempUsername);
-    setPassword(tempPassword);
-    setProfilePic(tempProfilePic);
-    localStorage.setItem("userName", tempName);
-    localStorage.setItem("username", tempUsername);
-    localStorage.setItem("password", tempPassword);
-    localStorage.setItem("profilePic", tempProfilePic);
-    alert("Profile updated successfully!");
-  };
-
-  // Save budget
-  const saveBudget = () => {
-    setMonthlyBudget(tempBudget);
-    localStorage.setItem("monthlyBudget", tempBudget);
-    alert("Budget updated successfully!");
-  };
-
-  // Save preferences
-  const savePreferences = () => {
-    setCurrency(tempCurrency);
-    setTheme(tempTheme);
-    setDateFormat(tempDateFormat);
-    localStorage.setItem("currency", tempCurrency);
-    localStorage.setItem("theme", tempTheme);
-    localStorage.setItem("dateFormat", tempDateFormat);
-
-    // Apply theme
-    if (tempTheme === "dark") {
-      document.body.classList.add("dark");
+  // Load user data from localStorage
+  useEffect(() => {
+    // Try to get from unified currentUser object
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (currentUser) {
+      setUser(currentUser);
     } else {
-      document.body.classList.remove("dark");
+      // Fallback to individual keys (from signup)
+      const name = localStorage.getItem("userName") || "User";
+      const email = localStorage.getItem("userEmail") || "";
+      const mobile = localStorage.getItem("userMobile") || "";
+      const profilePic = localStorage.getItem("profilePic") || null;
+      setUser({ name, email, mobile, profilePic });
     }
-    alert("Preferences updated successfully!");
-  };
+  }, []);
 
-  // Reset profile to saved values
-  const resetProfile = () => {
-    setTempName(name);
-    setTempUsername(username);
-    setTempPassword(password);
-    setTempProfilePic(profilePic);
-  };
-
-  // Reset budget to saved
-  const resetBudget = () => {
-    setTempBudget(monthlyBudget);
-  };
-
-  // Reset preferences to saved
-  const resetPreferences = () => {
-    setTempCurrency(currency);
-    setTempTheme(theme);
-    setTempDateFormat(dateFormat);
-  };
-
-  // Handle profile picture upload (simulated with file reader)
+  // Handle profile picture upload – saves immediately
   const handleProfilePicUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && user) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTempProfilePic(reader.result);
+        const updatedUser = { ...user, profilePic: reader.result };
+        setUser(updatedUser);
+        // Save to localStorage in both formats
+        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+        localStorage.setItem("profilePic", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Logout function
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = "/"; // Change to your login route
+  // Export user data as CSV
+  const exportCSV = () => {
+    if (!user) return;
+    const headers = ["Field", "Value"];
+    const data = [
+      ["Name", user.name],
+      ["Email", user.email],
+      ["Mobile", user.mobile || ""],
+      ["Profile Picture", user.profilePic ? "Stored" : "None"],
+    ];
+    const csvContent = [headers, ...data]
+      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "user_settings.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  // Apply theme on mount and when theme changes
-  useEffect(() => {
-    if (theme === "dark") {
-      document.body.classList.add("dark");
+  // Handle navigation for setting items
+  const handleSettingClick = (title) => {
+    if (title === "Account Information") {
+      navigate("/account");
+    } else if (title === "Change Password") {
+      // navigate("/change-password") if you have that page
+      alert("Change Password page coming soon!");
+    } else if (title === "Help & Support") {
+      alert("Help & Support coming soon!");
     } else {
-      document.body.classList.remove("dark");
+      alert(`${title} page coming soon!`);
     }
-  }, [theme]);
+  };
+
+  if (!user) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-blue-500 dark:bg-gray-900 p-4 sm:p-6 transition-colors">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors">
-        {/* Header */}
-        <div className="bg-blue-600 dark:bg-blue-800 text-white p-4 sm:p-6 transition-colors">
-          <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
-          <p className="text-sm sm:text-base text-blue-100 dark:text-blue-200">
-            Manage your account and preferences
-          </p>
+    <div className="min-h-screen bg-blue-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex justify-center items-start py-10 transition">
+      <div className="w-full max-w-md space-y-6">
+        {/* 👤 PROFILE CARD */}
+        <div className="bg-white/70 dark:bg-gray-800/80 backdrop-blur-lg p-6 rounded-3xl shadow-xl">
+          <div className="flex items-center gap-4">
+            {/* Profile picture with camera icon */}
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+                {user.profilePic ? (
+                  <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  user.name?.charAt(0).toUpperCase()
+                )}
+              </div>
+              {/* Camera icon – hidden input is triggered by clicking this label */}
+              <label
+                htmlFor="profile-upload"
+                className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer hover:bg-blue-700 transition"
+              >
+                <FaCamera size={14} />
+              </label>
+              <input
+                type="file"
+                id="profile-upload"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePicUpload}
+              />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold dark:text-white">{user.name}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{user.email}</p>
+              {user.mobile && <p className="text-xs text-gray-500 dark:text-gray-400">{user.mobile}</p>}
+            </div>
+          </div>
         </div>
 
-        {/* Tabs - responsive wrap */}
-        <div className="flex flex-wrap border-b dark:border-gray-700">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`flex-1 min-w-[120px] py-3 font-semibold transition ${
-              activeTab === "profile"
-                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-            }`}
-          >
-            <FaUser className="inline mr-2" /> Profile
-          </button>
-          <button
-            onClick={() => setActiveTab("budget")}
-            className={`flex-1 min-w-[120px] py-3 font-semibold transition ${
-              activeTab === "budget"
-                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-            }`}
-          >
-            <FaWallet className="inline mr-2" /> Budget
-          </button>
-          <button
-            onClick={() => setActiveTab("preferences")}
-            className={`flex-1 min-w-[120px] py-3 font-semibold transition ${
-              activeTab === "preferences"
-                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-            }`}
-          >
-            <FaPalette className="inline mr-2" /> Preferences
-          </button>
+        {/* 💎 PREMIUM CARD */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-3xl shadow-xl">
+          <h3 className="font-semibold text-lg">Premium Account</h3>
+          <p className="text-sm opacity-90">Enjoy your premium features</p>
         </div>
 
-        {/* Tab Content */}
-        <div className="p-4 sm:p-6">
-          {/* Profile Tab */}
-          {activeTab === "profile" && (
-            <div className="space-y-6">
-              {/* Profile Picture Section - stacks on mobile */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
-                <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex items-center justify-center">
-                    {tempProfilePic ? (
-                      <img src={tempProfilePic} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <FaUser className="text-3xl sm:text-4xl text-gray-600 dark:text-gray-400" />
-                    )}
-                  </div>
-                  <label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-blue-600 dark:bg-blue-700 text-white p-1.5 sm:p-2 rounded-full cursor-pointer hover:bg-blue-700 dark:hover:bg-blue-800 transition">
-                    <FaCamera className="text-sm sm:text-base" />
-                  </label>
-                  <input
-                    type="file"
-                    id="profile-upload"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleProfilePicUpload}
-                  />
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">Profile Picture</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Click the camera icon to upload</p>
-                </div>
-              </div>
+        {/* ⚙ SETTINGS LIST CARD */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg p-6 rounded-3xl shadow-xl space-y-4">
+          <SettingItem 
+            title="Account Information" 
+            onClick={() => handleSettingClick("Account Information")} 
+          />
+          <SettingItem 
+            title="Change Password" 
+            onClick={() => handleSettingClick("Change Password")} 
+          />
+          <SettingItem 
+            title="Devices" 
+            onClick={() => handleSettingClick("Devices")} 
+          />
+          <SettingItem 
+            title="Connect to Banks" 
+            onClick={() => handleSettingClick("Connect to Banks")} 
+          />
 
-              {/* Profile Fields */}
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={tempName}
-                  onChange={(e) => setTempName(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={tempUsername}
-                  onChange={(e) => setTempUsername(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  placeholder="Enter username"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={tempPassword}
-                    onChange={(e) => setTempPassword(e.target.value)}
-                    className="w-full border rounded px-3 py-2 pr-10 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    placeholder="Enter password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-400"
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-              </div>
+          <hr className="border-gray-200 dark:border-gray-700" />
 
-              {/* Action Buttons - stack on mobile */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                <button
-                  onClick={saveProfile}
-                  className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm sm:text-base"
-                >
-                  <FaSave /> Save Profile
-                </button>
-                <button
-                  onClick={resetProfile}
-                  className="bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-gray-600 dark:hover:bg-gray-700 transition text-sm sm:text-base"
-                >
-                  <FaUndo /> Reset
-                </button>
-              </div>
-
-              {/* Logout Button */}
-              <div className="border-t dark:border-gray-700 pt-6">
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-red-600 dark:bg-red-700 text-white px-4 py-3 rounded flex items-center justify-center gap-2 hover:bg-red-700 dark:hover:bg-red-800 transition font-semibold text-sm sm:text-base"
-                >
-                  <FaSignOutAlt /> Logout
-                </button>
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                  This will clear all your local data and log you out.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Budget Tab */}
-          {activeTab === "budget" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Monthly Budget ({currency})
-                </label>
-                <input
-                  type="number"
-                  value={tempBudget}
-                  onChange={(e) => setTempBudget(Number(e.target.value))}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                  placeholder="0"
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                <button
-                  onClick={saveBudget}
-                  className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm sm:text-base"
-                >
-                  <FaSave /> Save Budget
-                </button>
-                <button
-                  onClick={resetBudget}
-                  className="bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-gray-600 dark:hover:bg-gray-700 transition text-sm sm:text-base"
-                >
-                  <FaUndo /> Reset
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Preferences Tab */}
-          {activeTab === "preferences" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Currency Symbol
-                </label>
-                <select
-                  value={tempCurrency}
-                  onChange={(e) => setTempCurrency(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                >
-                  <option value="₦">₦ Naira</option>
-                  <option value="$">$ Dollar</option>
-                  <option value="€">€ Euro</option>
-                  <option value="£">£ Pound</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Theme
-                </label>
-                <select
-                  value={tempTheme}
-                  onChange={(e) => setTempTheme(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-1 text-sm sm:text-base">
-                  Date Format
-                </label>
-                <select
-                  value={tempDateFormat}
-                  onChange={(e) => setTempDateFormat(e.target.value)}
-                  className="w-full border rounded px-3 py-2 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                >
-                  <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                  <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                </select>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                <button
-                  onClick={savePreferences}
-                  className="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-blue-700 dark:hover:bg-blue-800 transition text-sm sm:text-base"
-                >
-                  <FaSave /> Save Preferences
-                </button>
-                <button
-                  onClick={resetPreferences}
-                  className="bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-gray-600 dark:hover:bg-gray-700 transition text-sm sm:text-base"
-                >
-                  <FaUndo /> Reset
-                </button>
-              </div>
-            </div>
-          )}
+          <SettingItem 
+            title="Help & Support" 
+            onClick={() => handleSettingClick("Help & Support")} 
+          />
+          <SettingItem 
+            title="About App" 
+            onClick={() => handleSettingClick("About App")} 
+          />
         </div>
+
+        {/* EXPORT CSV BUTTON */}
+        <button
+          onClick={exportCSV}
+          className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition font-semibold"
+        >
+          <FaFileCsv /> Export Settings as CSV
+        </button>
       </div>
     </div>
   );
-};
+}
 
-export default SettingsPage;
+/* 🔹 Reusable Setting Item with onClick prop */
+function SettingItem({ title, onClick }) {
+  return (
+    <div 
+      className="flex justify-between items-center p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+      onClick={onClick}
+    >
+      <span className="dark:text-gray-200">{title}</span>
+      <span className="text-gray-400">{">"}</span>
+    </div>
+  );
+}

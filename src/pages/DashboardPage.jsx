@@ -3,7 +3,8 @@ import heroImage from "../assets/shubham-dhage-Vtm64FggqeQ-unsplash.jpg";
 import { FaWallet, FaMoneyBillWave, FaShoppingCart, FaPencilAlt } from "react-icons/fa";
 
 const DashboardPage = () => {
-  const username = localStorage.getItem("username") || "User";
+  // Retrieve username from localStorage – try "userName" first, then "username", default to "User"
+  const username = localStorage.getItem("userName") || localStorage.getItem("username") || "User";
 
   // State for editable values
   const [totalIncome, setTotalIncome] = useState(() => 

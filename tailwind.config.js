@@ -12,7 +12,7 @@ export default {
 
 
 module.exports = {
-  darkMode: "class",
+  darkMode: "class", // VERY IMPORTANT
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {},

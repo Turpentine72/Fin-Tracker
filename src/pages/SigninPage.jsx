@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { FaUser, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import signinBg from "../assets/shubham-dhage-Vtm64FggqeQ-unsplash.jpg"; // Local image import
 
 const SigninPage = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignin = (e) => {
     e.preventDefault();
@@ -12,75 +15,71 @@ const SigninPage = () => {
       alert("Name and password are required!");
       return;
     }
+
     const storedName = localStorage.getItem("userName");
-    const storedPassword = localStorage.getItem("password");
+    const storedPassword = localStorage.getItem("userPassword");
+
+    if (!storedName || !storedPassword) {
+      alert("No user found. Please sign up first.");
+      return;
+    }
+
     if (name === storedName && password === storedPassword) {
       alert("Sign in successful!");
-      // Redirect to dashboard
+      navigate("/dashboard");
     } else {
       alert("Invalid credentials!");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-blue-500 dark:bg-gray-900 p-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
-        {/* Header with image and Expensely */}
-        <div className="h-40 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+        {/* Header with local image */}
+        <div className="h-40 relative">
           <img
-            src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-            alt="Expensely"
+            src={signinBg}
+            alt="Fin Tracker"
             className="w-full h-full object-cover opacity-80"
           />
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-between px-6">
-            <h1 className="text-white text-3xl font-bold">Expensely</h1>
-            <a href="/signup" className="text-white text-sm font-semibold hover:underline">
-              Sign up
-            </a>
+            <h1 className="text-white text-3xl font-bold">Fin Tracker</h1>
           </div>
         </div>
 
         <div className="p-6">
-          {/* Tagline */}
-          <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
-            Best way to save your money
+          <p className="text-center text-black text-xl dark:text-gray-400 mb-8">
+            Sign In
           </p>
 
-          {/* Sign in form */}
           <form onSubmit={handleSignin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pl-10 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your name"
-                />
-                <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
-              </div>
+            <div className="relative">
+              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Name"
+              />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pl-10 pr-16 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
-                />
-                <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-12 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </button>
             </div>
 
             <button
@@ -91,10 +90,7 @@ const SigninPage = () => {
             </button>
           </form>
 
-      
-
-          {/* Sign up link */}
-          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-4">
+          <p className="text-center text-black dark:text-gray-400 text-sm mt-4">
             Don't have an account?{" "}
             <a href="/signup" className="text-blue-500 hover:underline font-semibold">
               SIGN UP

@@ -1,118 +1,112 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import signupBg from "../assets/shubham-dhage-Vtm64FggqeQ-unsplash.jpg"; 
 
 const SignupPage = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: "",
-    username: "",
-    password: "",
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSignup = (e) => {
     e.preventDefault();
-
-    if (!formData.name || !formData.username || !formData.password) {
-      alert("Please fill in all required fields");
+    if (!name || !email || !mobile || !password) {
+      alert("All fields are required!");
       return;
     }
-
-    console.log("Signup data:", formData);
-
-    // Optional: Save to localStorage
-    localStorage.setItem("username", formData.username);
-    localStorage.setItem("password", formData.password);
-
-    navigate("/login");
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    localStorage.setItem("userName", name);
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("userMobile", mobile);
+    localStorage.setItem("userPassword", password);
+    alert("Sign up successful!");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-600 px-4 py-6 sm:px-6">
-      <div className="bg-white p-6 sm:p-8 rounded shadow-md w-full max-w-sm sm:max-w-md">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-black">
-          Sign Up
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Field */}
-          <div className="flex flex-col">
-            <label className="mb-1 font-semibold text-black text-sm sm:text-base">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter your name"
-              className="w-full border px-3 py-2 rounded text-sm sm:text-base"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-blue-500 dark:bg-gray-900 p-4">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
+        {/* Header with local image */}
+        <div className="h-40 relative">
+          <img
+            src={signupBg}
+            alt="Fin Tracker"
+            className="w-full h-full object-cover opacity-80"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-between px-6">
+            <h1 className="text-white text-3xl font-bold">Fin Tracker</h1>
           </div>
+        </div>
 
-          {/* Username Field */}
-          <div className="flex flex-col">
-            <label className="mb-1 font-semibold text-black text-sm sm:text-base">
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Enter your username"
-              className="w-full border px-3 py-2 rounded text-sm sm:text-base"
-            />
-          </div>
+        <div className="p-6">
+          <p className="text-center text-black text-xl dark:text-gray-400 mb-6">Sign Up</p>
 
-          {/* Password Field with Toggle */}
-          <div className="flex flex-col">
-            <label className="mb-1 font-semibold text-black text-sm sm:text-base">
-              Password
-            </label>
+          <form onSubmit={handleSignup} className="space-y-4">
             <div className="relative">
+              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Name"
+              />
+            </div>
+
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Email"
+              />
+            </div>
+
+            <div className="relative">
+              <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
+              <input
+                type="tel"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Mobile"
+              />
+            </div>
+
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300" />
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                className="w-full border px-3 py-2 rounded text-sm sm:text-base pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-12 py-3 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Password"
               />
               <button
                 type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded text-sm sm:text-base"
-          >
-            Sign Up
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold text-base transition"
+            >
+              Sign up
+            </button>
+          </form>
 
-        <p className="mt-4 text-sm sm:text-base text-black">
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-600">
-            Login
-          </Link>
-        </p>
+          <p className="text-center text-black dark:text-gray-400 text-sm mt-4">
+            Already have an account?{" "}
+            <a href="/signin" className="text-blue-500 hover:underline font-semibold">
+              SIGN IN
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
